@@ -6,7 +6,7 @@ from telegram import Update, ChatMember
 from telegram.ext import ApplicationBuilder, CommandHandler, ContextTypes
 
 # Token aus ENV lesen (z.B. bei Render als ENV Variable setzen)
-TOKEN = os.getenv("TOKEN") or "DEIN_TELEGRAM_BOT_TOKEN_HIER"
+TOKEN = os.getenv("7651386602:AAGdpwcTFxARftqtoqMGYx_GPUZ2bV3w94U") or "DEIN_TELEGRAM_BOT_TOKEN_HIER"
 
 VIDEO_ORDNER = r"C:\Users\night\Desktop\PREM"
 
