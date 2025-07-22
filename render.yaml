@@ -1,0 +1,9 @@
+services:
+  - type: web
+    name: telegram-bot
+    env: python
+    buildCommand: pip install -r requirements.txt
+    startCommand: python bot.py
+    envVars:
+      - key: TOKEN
+        value: 651386602:AAGdpwcTFxARftqtoqMGYx_GPUZ2bV3w94U  # Oder du kannst das in den Render-Einstellungen setzen
