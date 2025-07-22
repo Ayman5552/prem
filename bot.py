@@ -8,27 +8,12 @@ from telegram.ext import ApplicationBuilder, CommandHandler, ContextTypes
 app = FastAPI()
 
 TOKEN = os.getenv("BOT_TOKEN")
-VIDEO_ORDNER = "videos"  # Ordner relativ im Projekt (nicht dein Desktop!)
+VIDEO_ORDNER = "videos"  # Ordner relativ im Projektverzeichnis
 
 nachricht = (
     "🎁 *Geschenk zum Launch:*\n"
     "Nur heute bis *0:00 Uhr* – *Premium VIP für 45 € statt 150 €!*\n\n"
-    "🤖 *Wofür ist der Bot da?*\n"
-    "👉 Der Bot dient *nur dazu*, dir zu zeigen, *wie viele Weiber aktuell online* in der Premium VIP Gruppe sind.\n"
-    "So kannst du dir vorher ein Bild machen – *damit du nicht blind irgendwas kaufst*.\n\n"
-    "✅ Transparent & fair – keine Überraschungen.\n\n"
-    "*So funktioniert's:*\n"
-    "1️⃣ Starte den Bot\n"
-    "2️⃣ Wähle: 🇩🇪 *Deutschland* → dein *Bundesland* → deine *Stadt* (z. B. Köln)\n"
-    "3️⃣ Entweder bleibst du in der Stadt oder gehst weiter zu *Stadtteilen*\n"
-    "4️⃣ Dann kannst du auswählen zwischen:\n"
-    "   📸 *Nudes*  |  🤝 *Treffen*  |  👻 *Snaps*\n"
-    "   Alles sauber sortiert.\n\n"
-    "💳 *Zahlung möglich mit:*\n"
-    "PayPal, Bank, Crypto, PaySafeCard\n\n"
-    "Nach Verifizierung erhältst du mehrere Backup-Links zur Gruppe – falls mal eine gesperrt wird (was fast nie passiert).\n\n"
-    "📲 *Privat starten mit* `/start`\n\n"
-    "🔜 [@PremiumXVIP_bot](https://t.me/PremiumXVIP_bot) 🔙"
+    "..."
 )
 
 @app.get("/")
@@ -62,25 +47,22 @@ async def prem_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
         with open(video_pfad, "rb") as video:
             await context.bot.send_video(chat_id=chat.id, video=video)
 
-    await context.bot.send_message(chat_id=chat.id, text="📽️ Das ist eine Vorschau, was z.B. in Düsseldorf bei Nudes zu sehen ist.")
-
-async def start_bot():
-    application = ApplicationBuilder().token(TOKEN).build()
-    application.add_handler(CommandHandler("prem", prem_command))
-
-    # ✅ run_polling im Hintergrund starten
-    asyncio.create_task(application.run_polling())
-    return application
+    await context.bot.send_message(chat_id=chat.id, text="📽️ Vorschau für Düsseldorf bei Nudes.")
 
 async def main():
-    await start_bot()
+    # Telegram-Bot Setup
+    app_bot = ApplicationBuilder().token(TOKEN).build()
+    app_bot.add_handler(CommandHandler("prem", prem_command))
+    await app_bot.initialize()
+    await app_bot.start()
+    print("✅ Bot gestartet")
 
-    # Starte Uvicorn (FastAPI Webserver)
+    # Webserver parallel starten
     import uvicorn
-    port = int(os.environ.get("PORT", 8000))
-    config = uvicorn.Config(app, host="0.0.0.0", port=port)
+    config = uvicorn.Config(app, host="0.0.0.0", port=int(os.environ.get("PORT", 8000)))
     server = uvicorn.Server(config)
 
+    # Webserver "blockiert" das Ende – aber Bot läuft im Hintergrund
     await server.serve()
 
 if __name__ == "__main__":
