@@ -1,9 +1,14 @@
-from telegram import Update, ChatMember
-from telegram.ext import ApplicationBuilder, CommandHandler, ContextTypes
 import os
 import random
+import asyncio
+from fastapi import FastAPI
+from telegram import Update, ChatMember
+from telegram.ext import ApplicationBuilder, CommandHandler, ContextTypes
 
-TOKEN = "7651386602:AAGdpwcTFxARftqtoqMGYx_GPUZ2bV3w94U"
+# Token aus ENV lesen (z.B. bei Render als ENV Variable setzen)
+TOKEN = os.getenv("TOKEN") or "DEIN_TELEGRAM_BOT_TOKEN_HIER"
+
+VIDEO_ORDNER = r"C:\Users\night\Desktop\PREM"
 
 nachricht = (
     "🎁 *Geschenk zum Launch:*\n"
@@ -26,20 +31,11 @@ nachricht = (
     "🔜 [@PremiumXVIP_bot](https://t.me/PremiumXVIP_bot) 🔙"
 )
 
-VIDEO_ORDNER = r"C:\Users\night\Desktop\PREM"
+app = FastAPI()
 
-def finde_random_video_datei():
-    if not os.path.isdir(VIDEO_ORDNER):
-        print(f"FEHLER: Ordner '{VIDEO_ORDNER}' nicht gefunden!")
-        return None
-    
-    dateien = [f for f in os.listdir(VIDEO_ORDNER) if f.lower().endswith(('.mp4', '.mov', '.avi'))]
-    if not dateien:
-        print("FEHLER: Keine Video-Dateien im Ordner gefunden!")
-        return None
-    
-    datei = random.choice(dateien)
-    return os.path.join(VIDEO_ORDNER, datei)
+@app.get("/")
+async def root():
+    return {"status": "Bot läuft"}
 
 async def prem_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user_id = update.effective_user.id
@@ -59,6 +55,10 @@ async def prem_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
         parse_mode="Markdown"
     )
 
+    if not os.path.isdir(VIDEO_ORDNER):
+        await context.bot.send_message(chat_id=chat.id, text="⚠️ Video-Ordner nicht gefunden.")
+        return
+
     alle_dateien = [f for f in os.listdir(VIDEO_ORDNER) if f.lower().endswith(('.mp4', '.mov', '.avi'))]
     if not alle_dateien:
         await context.bot.send_message(chat_id=chat.id, text="⚠️ Keine Videos im Ordner gefunden.")
@@ -76,8 +76,25 @@ async def prem_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
         text="📽️ Das ist eine Vorschau, was z.B. in Düsseldorf bei Nudes zu sehen ist."
     )
 
+async def start_bot():
+    application = ApplicationBuilder().token(TOKEN).build()
+    application.add_handler(CommandHandler("prem", prem_command))
+    await application.initialize()
+    await application.start()
+    return application
+
+async def main():
+    # Telegram-Bot starten
+    application = await start_bot()
+    
+    # Uvicorn Webserver für FastAPI starten
+    import uvicorn
+    port = int(os.environ.get("PORT", 8000))
+    config = uvicorn.Config(app, host="0.0.0.0", port=port, log_level="info")
+    server = uvicorn.Server(config)
+
+    # Webserver und Bot laufen parallel
+    await server.serve()
+
 if __name__ == "__main__":
-    app = ApplicationBuilder().token(TOKEN).build()
-    app.add_handler(CommandHandler("prem", prem_command))
-    print("✅ Bot läuft...")
-    app.run_polling()
+    asyncio.run(main())
