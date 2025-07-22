@@ -8,8 +8,7 @@ from telegram.ext import ApplicationBuilder, CommandHandler, ContextTypes
 app = FastAPI()
 
 TOKEN = os.getenv("BOT_TOKEN")
-VIDEO_ORDNER = "videos"  # Ordner relativ im Projektverzeichnis
-
+video_urls = ["https://raw.githubusercontent.com/Ayman5552/prem/main/videos/video1.mp4"]
 nachricht = (
     "🎁 *Geschenk zum Launch:*\n"
     "Nur heute bis *0:00 Uhr* – *Premium VIP für 45 € statt 150 €!*\n\n"
